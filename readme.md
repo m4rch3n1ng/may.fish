@@ -6,7 +6,7 @@ comes with git integration.
 ## install
 
 ```sh
-$ fisher install m4rch3n1ng/may-fish
+$ fisher install m4rch3n1ng/may.fish
 ```
 
 ## info
