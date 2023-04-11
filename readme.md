@@ -5,6 +5,8 @@ comes with git integration.
 
 ## install
 
+install using [fisher](https://github.com/jorgebucaran/fisher)
+
 ```sh
 $ fisher install m4rch3n1ng/may.fish
 ```

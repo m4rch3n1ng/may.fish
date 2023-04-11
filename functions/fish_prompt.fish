@@ -8,18 +8,13 @@ function __mayfish_git_mode -d "get info for current git operation"
 	set -l git_path $(__mayfish_git_path)
 	set -l green (set_color green)
 
-	if test -e "$git_path/BISECT_LOG"
-		echo "bsc"
-	else if test -e "$git_path/MERGE_HEAD"
-		echo "mrg"
-	else if test -e "$git_path/rebase"; or test -e "$git_path/rebase-apply"; or test -e "$git_path/rebase-merge"; or test -e "$git_path/../.dotest"
+	if test -e "$git_path/rebase"; or test -e "$git_path/rebase-apply"; or test -e "$git_path/rebase-merge"
 		set -l branch
 		set -l proc
 
 		if test -f "$git_path/rebase-merge/msgnum"
 			set -l step (cat "$git_path/rebase-merge/msgnum")
 			set -l total (cat "$git_path/rebase-merge/end")
-			# branch 
 			set proc " $step/$total"
 		end
 
@@ -29,7 +24,27 @@ function __mayfish_git_mode -d "get info for current git operation"
 		end
 
 		echo "rbs$proc$branch"
-	end
+	else if test -e "$git_path/BISECT_LOG"
+		set -l branch
+		if test -f "$git_path/BISECT_START"
+			set -l branch_str (cat "$git_path/BISECT_START")
+			set branch " $branch_str"
+		end
+
+		echo "bsc$branch"
+	else if test -e "$git_path/MERGE_HEAD"
+		echo "mrg"
+	else if test -f "$git_path/CHERRY_PICK_HEAD"
+		set -l pick_long (cat "$git_path/CHERRY_PICK_HEAD")
+		set -l pick (git rev-parse --short $pick_long)
+
+		echo "chp :$pick"
+	else if test -f "$git_path/REVERT_HEAD"
+		set -l rvt_long (cat "$git_path/REVERT_HEAD")
+		set -l rvt (git rev-parse --short $rvt_long)
+
+		echo "rvt :$rvt"
+	end 
 end
 
 function __mayfish_git_branch -d "get name of current branch / hash"
