@@ -33,15 +33,21 @@ function __mayfish_git_mode -d "get info for current git operation"
 
 		echo "bsc$branch"
 	else if test -e "$git_path/MERGE_HEAD"
-		echo "mrg"
+		set -l merge_long (cat "$git_path/MERGE_HEAD")
+		set -l merge (git rev-parse --short $merge_long)
+		set -l mrg (git name-rev --no-undefined --always --exclude="tags/*" "$merge")
+
+		echo "mrg :$mrg"
 	else if test -f "$git_path/CHERRY_PICK_HEAD"
 		set -l pick_long (cat "$git_path/CHERRY_PICK_HEAD")
 		set -l pick (git rev-parse --short $pick_long)
+		set -l chp (git name-rev --no-undefined --always --exclude="tags/*" "$pick")
 
-		echo "chp :$pick"
+		echo "chp :$chp"
 	else if test -f "$git_path/REVERT_HEAD"
-		set -l rvt_long (cat "$git_path/REVERT_HEAD")
-		set -l rvt (git rev-parse --short $rvt_long)
+		set -l revert_long (cat "$git_path/REVERT_HEAD")
+		set -l revert (git rev-parse --short $revert_long)
+		set -l rvt (git name-rev --no-undefined --always --exclude="tags/*" "$revert")
 
 		echo "rvt :$rvt"
 	end 
