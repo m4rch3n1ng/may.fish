@@ -1,46 +1,3 @@
-# <default customization />
-## :: symbols ::
-set -l __mayfish_default_symbol_git_hash ":"
-## :: colors ::
-### main
-set -l __mayfish_default_color_tag (set_color normal)
-set -l __mayfish_default_color_dir (set_color cyan)
-set -l __mayfish_default_color_user (set_color yellow)
-### root
-set -l __mayfish_default_color_root (set_color -o red)
-set -l __mayfish_default_color_root_tag (set_color -o red)
-### git
-set -l __mayfish_default_color_git_branch (set_color green)
-set -l __mayfish_default_color_git_state (set_color magenta)
-
-# <set customization />
-## :: utility ::
-function __mayfish_default_fallback -d "return if not set"
-	set -l arg0 $argv[1]
-	set -l arg1 $argv[2]
-
-	if test -n $arg0
-		echo $arg0
-	else
-		echo $arg1
-	end
-end
-
-## :: symbols ::
-set __mayfish_local_symbol_git_hash (__mayfish_default_fallback $__mayfish_symbol_git_hash $__mayfish_default_symbol_git_hash)
-## :: colors ::
-### main
-set __mayfish_local_color_tag (__mayfish_default_fallback $__mayfish_color_tag $__mayfish_default_color_tag)
-set __mayfish_local_color_dir (__mayfish_default_fallback $__mayfish_color_dir $__mayfish_default_color_dir)
-set __mayfish_local_color_user (__mayfish_default_fallback $__mayfish_color_user $__mayfish_default_color_user)
-### root
-set __mayfish_local_color_root (__mayfish_default_fallback $__mayfish_color_root $__mayfish_default_color_root)
-set __mayfish_local_color_root_tag (__mayfish_default_fallback $__mayfish_color_root_tag $__mayfish_default_color_root_tag)
-### git
-set __mayfish_local_color_git_branch (__mayfish_default_fallback $__mayfish_color_git_branch $__mayfish_default_color_git_branch)
-set __mayfish_local_color_git_state (__mayfish_default_fallback $__mayfish_color_git_state $__mayfish_default_color_git_state)
-
-# <git integration />
 function __mayfish_git_path -d "get path of git directory"
 	echo (git rev-parse --git-dir 2> /dev/null)
 end
@@ -61,15 +18,15 @@ function __mayfish_git_hash -d "format git hash"
 	end
 
 	if [ $hash_rel ]
-		echo $__mayfish_local_symbol_git_hash$hash_rel
+		echo $hash_rel
 	else
-		echo $__mayfish_local_symbol_git_hash$hash_short
+		echo $hash_short
 	end
 end
 
-## thx https://github.com/Byron/gitoxide/blob/31801420e1bef1ebf32e14caf73ba29ddbc36443/gix/src/repository/state.rs#L3
-## thx https://github.com/Byron/gitoxide/blob/31801420e1bef1ebf32e14caf73ba29ddbc36443/gix/src/state.rs#L3
-function __mayfish_git_state -d "get info for current git operation"
+# thx https://github.com/Byron/gitoxide/blob/31801420e1bef1ebf32e14caf73ba29ddbc36443/gix/src/repository/state.rs#L3
+# thx https://github.com/Byron/gitoxide/blob/31801420e1bef1ebf32e14caf73ba29ddbc36443/gix/src/state.rs#L3
+function __mayfish_git_mode -d "get info for current git operation"
 	set -l git_path $(__mayfish_git_path)
 
 	if test -f "$git_path/rebase-apply/applying"
@@ -108,17 +65,17 @@ function __mayfish_git_state -d "get info for current git operation"
 		set -l hash_long (cat "$git_path/MERGE_HEAD")
 		set -l hash (__mayfish_git_hash $hash_long)
 
-		echo "mrg $hash"
+		echo "mrg :$hash"
 	else if test -f "$git_path/CHERRY_PICK_HEAD"
 		set -l hash_long (cat "$git_path/CHERRY_PICK_HEAD")
 		set -l hash (__mayfish_git_hash $hash_long)
 
-		echo "chp $hash"
+		echo "chp :$hash"
 	else if test -f "$git_path/REVERT_HEAD"
 		set -l hash_long (cat "$git_path/REVERT_HEAD")
 		set -l hash (__mayfish_git_hash $hash_long)
 
-		echo "rvt $hash"
+		echo "rvt :$hash"
 	end 
 end
 
@@ -133,66 +90,47 @@ function __mayfish_git_branch -d "get name of current branch / hash"
 		[ $ret = 128 ] && return
 		set ref (git rev-parse --short HEAD 2> /dev/null) || return
 		set -l hash (__mayfish_git_hash $ref)
-		echo $hash
+		echo ':'$hash
 	end
 end
 
 function __mayfish_git -d "get git info"
+	set -l red (set_color red)
+	set -l green (set_color green)
+
 	set -l git_branch (__mayfish_git_branch)
 	[ $git_branch ] || return
 
-	set -l git_state (__mayfish_git_state)
+	set -l git_mode (__mayfish_git_mode)
 
-	if [ $git_state ]
-		echo -ns $__mayfish_local_color_git_branch'('$__mayfish_local_color_git_state$git_state$__mayfish_local_color_git_branch' '$git_branch')'
+	if [ $git_mode ]
+		echo -ns $green'('$red$git_mode$green' '$git_branch')'
 	else
-		echo -ns $__mayfish_local_color_git_branch'('$git_branch')'
+		echo -ns $green'('$git_branch')'
 	end
 end
 
-# <prompt info />
-function __mayfish_tag -d "start character of shell, \$ usually, # for root"
-	set -l normal (set_color normal)
-
+function __mayfish_start -d "start character of shell, \$ normally, # for root"
 	if [ (whoami) = "root" ]
-		echo "$__mayfish_local_color_root_tag#$normal"
+		echo "#"
 	else
-		echo "$__mayfish_local_color_tag\$$normal"
+		echo "\$"
 	end
 end
 
-function __mayfish_usr -d "get whomai"
-	set -l normal (set_color normal)
-
-	set -l usr (whoami)
-	if [ $usr = "root" ]
-		echo "$__mayfish_local_color_root$usr$normal"
-	else
-		echo "$__mayfish_local_color_user$usr$normal"
-	end
-end
-
-function __mayfish_dir -d "get dir"
-	set -l normal (set_color normal)
-
-	set -l pwd (prompt_pwd)
-	set -l dir (basename $pwd)
-
-	echo "$__mayfish_local_color_dir$dir$normal"
-end
-
-# <prompt />
 function fish_prompt -d "generate prompt"
 	set -l normal (set_color normal)
+	set -l cyan (set_color cyan)
+	set -l yellow (set_color yellow)
 
-	set -l tag (__mayfish_tag)
-	set -l usr (__mayfish_usr)
-	set -l dir (__mayfish_dir)
+	set -l start (__mayfish_start)
+	set -l usr $yellow(whoami)$normal
+	set -l dir $cyan(basename (prompt_pwd))$normal
 	set -l git (__mayfish_git)
 
 	if test $git
-		echo -ns $tag' '$usr' '$dir' '$git$normal' >> ' 
+		echo -ns $start' '$usr' '$dir' '$git$normal' >> ' 
 	else
-		echo -ns $tag' '$usr' '$dir$normal' >> ' 
+		echo -ns $start' '$usr' '$dir$normal' >> ' 
 	end
 end
