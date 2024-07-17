@@ -56,8 +56,9 @@ function __mayfish_git_mode -d "get info for current git operation"
 	else if test -f "$git_path/BISECT_LOG"
 		set -l branch
 		if test -f "$git_path/BISECT_START"
-			set -l branch_str (cat "$git_path/BISECT_START")
-			set branch " $branch_str"
+			set -l hash_long (cat "$git_path/BISECT_START")
+			set -l hash (__mayfish_git_hash $hash_long)
+			set branch " :$hash"
 		end
 
 		echo "bsc$branch"
