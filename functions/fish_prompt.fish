@@ -5,15 +5,20 @@ end
 function __mayfish_git_hash -d "format git hash"
 	set -l hash_long $argv[1]
 	set -l hash_short (git rev-parse --short $hash_long)
-	set -l hash_rel (git name-rev --no-undefined --always --exclude="tags/*" --exclude="stash" --exclude="remotes/*" --exclude="bisect/*" "$hash_short" 2> /dev/null)
+	set -l hash_rel (git name-rev --no-undefined --always --refs=main --refs=master "$hash_short" 2> /dev/null)
 
 	set -l spl (string split " " $hash_rel)
 	if test "$spl[1]" = "$spl[2]"
-		set hash_rel (git name-rev --no-undefined --always --exclude="tags/*" "$hash_short" 2> /dev/null)
+		set hash_rel (git name-rev --no-undefined --always --exclude="tags/*" --exclude="stash" --exclude="remotes/*" --exclude="bisect/*" "$hash_short" 2> /dev/null)
 		set spl (string split " " $hash_rel)
 
 		if test "$spl[1]" = "$spl[2]"
-			set --erase hash_rel
+			set hash_rel (git name-rev --no-undefined --always "$hash_short" 2> /dev/null)
+			set spl (string split " " $hash_rel)
+
+			if test "$spl[1]" = "$spl[2]"
+				set --erase hash_rel
+			end
 		end
 	end
 
