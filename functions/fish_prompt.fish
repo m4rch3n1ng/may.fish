@@ -35,13 +35,13 @@ function __mayfish_git_mode -d "get info for current git operation"
 	set -l git_path $(__mayfish_git_path)
 
 	if test -f "$git_path/rebase-apply/applying"
-		echo "am"
+		echo am
 	else if test -f "$git_path/rebase-apply/rebasing"
 		# todo rebase steps / extra info ?
 		# idk how to get into this mode lol
-		echo "rbs"
+		echo rbs
 	else if test -d "$git_path/rebase-apply"
-		echo "am/rbs"
+		echo am/rbs
 	else if test -d "$git_path/rebase-merge"
 		set -l branch
 		set -l proc
@@ -82,7 +82,7 @@ function __mayfish_git_mode -d "get info for current git operation"
 		set -l hash (__mayfish_git_hash $hash_long)
 
 		echo "rvt :$hash"
-	end 
+	end
 end
 
 function __mayfish_git_branch -d "get name of current branch / hash"
@@ -117,7 +117,7 @@ function __mayfish_git -d "get git info"
 end
 
 function __mayfish_start -d "start character of shell, \$ normally, # for root"
-	if [ (whoami) = "root" ]
+	if [ (whoami) = root ]
 		echo "#"
 	else
 		echo "\$"
@@ -135,8 +135,8 @@ function fish_prompt -d "generate prompt"
 	set -l git (__mayfish_git)
 
 	if test $git
-		echo -ns $start' '$usr' '$dir' '$git$normal' >> ' 
+		echo -ns $start' '$usr' '$dir' '$git$normal' >> '
 	else
-		echo -ns $start' '$usr' '$dir$normal' >> ' 
+		echo -ns $start' '$usr' '$dir$normal' >> '
 	end
 end
