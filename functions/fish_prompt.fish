@@ -5,7 +5,7 @@ end
 function __mayfish_git_hash -d "format git hash"
 	set -l hash_long $argv[1]
 	set -l hash_short (git rev-parse --short $hash_long)
-	set -l hash_rel (git name-rev --no-undefined --always --refs=main --refs=master "$hash_short" 2> /dev/null)
+	set -l hash_rel (git name-rev --no-undefined --always --refs=main --refs=master --exclude="remotes/*" "$hash_short" 2> /dev/null)
 
 	set -l spl (string split " " $hash_rel)
 	if test "$spl[1]" = "$spl[2]"
